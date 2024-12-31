@@ -7,5 +7,5 @@ type OrderItem struct {
 	Product  string `json:"product" gorm:"not null"`
 	Quantity int    `json:"quantity" gorm:"not null"`
 	Price    int    `json:"price" gorm:"not null default 0"`
-	Amount   int    `json:"price" gorm:"not null default 0"`
+	Amount   int    `json:"amount" gorm:"not null default 0"`
 }

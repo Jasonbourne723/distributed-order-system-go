@@ -1,12 +1,9 @@
 package requests
 
-import "time"
-
 type CreateOrderDto struct {
-	OrderId  int64     `json:"order_id" `
-	Amount   int       `json:"amount" `
-	Customer string    `json:"customer" `
-	Created  time.Time `json:"created" `
+	OrderId  int64  `json:"order_id" `
+	Amount   int    `json:"amount" `
+	Customer string `json:"customer" `
 	Items    []OrderItem
 }
 

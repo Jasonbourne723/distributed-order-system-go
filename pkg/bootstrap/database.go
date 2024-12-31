@@ -7,7 +7,6 @@ import (
 	"os"
 	"strconv"
 
-	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -42,7 +41,7 @@ func initMySqlGorm() *gorm.DB {
 		DisableForeignKeyConstraintWhenMigrating: true, // 禁用自动创建外键约束
 		//Logger:                                   getGormLogger(), // 使用自定义 Logger
 	}); err != nil {
-		fmt.Println(fmt.Errorf("mysql connect failed, err:", zap.Any("err", err)))
+		fmt.Println(fmt.Errorf("mysql connect failed, err: %w", err))
 		return nil
 	} else {
 		sqlDB, _ := db.DB()
@@ -57,9 +56,11 @@ func initMySqlGorm() *gorm.DB {
 func initMySqlTables(db *gorm.DB) {
 	err := db.Set("gorm:table_options", "ENGINE=InnoDB CHARSET=utf8mb4").AutoMigrate(
 		models.Order{},
+		models.OrderItem{},
+		models.Inventory{},
 	)
 	if err != nil {
-		fmt.Println(fmt.Errorf("migrate table failed", zap.Any("err", err)))
+		fmt.Println(fmt.Errorf("migrate table failed,%w", err))
 		os.Exit(0)
 	}
 }

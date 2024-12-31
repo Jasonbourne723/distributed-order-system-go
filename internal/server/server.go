@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"distributed-order-system-go/internal/controllers"
 	"log"
 	"net/http"
 	"os"
@@ -23,6 +24,8 @@ func StartServer() {
 			"message": "pong",
 		})
 	})
+	router.POST("/order", controllers.OrderApi.Create)
+	router.GET("/order_id", controllers.OrderApi.GetOrderId)
 
 	server := &http.Server{
 		Addr:    ":8080",
@@ -41,7 +44,9 @@ func StartServer() {
 	<-quit
 	log.Println("Shutting down server...")
 
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFunc()
+
 	if err := server.Shutdown(ctx); err != nil {
 		log.Fatal("Server forced to shutdown:", err)
 	}
