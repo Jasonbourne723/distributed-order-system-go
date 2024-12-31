@@ -8,7 +8,6 @@ import (
 	"distributed-order-system-go/pkg/global"
 	"errors"
 	"fmt"
-	"math/rand"
 	"strconv"
 	"time"
 
@@ -39,12 +38,12 @@ func (o *orderService) Create(ctx context.Context, orderDto *requests.CreateOrde
 	} else if val > 1 {
 		return errors.New("repeat order")
 	}
+	global.App.Redis.Expire(ctx, key, time.Second*60)
 
 	//验证商品、价格信息
 
 	//分布式锁，事务处理 减库存、生成订单
-	n := rand.Intn(20) + 1
-	locker, err := global.App.DistributedLocker.WatchAndWaitForLock(orderDto.Items[0].Product + "-" + strconv.Itoa(n))
+	locker, err := global.App.DistributedLocker.WatchAndWaitForLock(orderDto.Items[0].Product)
 	if err != nil {
 		return errors.New("get locker failed")
 	}
@@ -52,8 +51,7 @@ func (o *orderService) Create(ctx context.Context, orderDto *requests.CreateOrde
 
 	return global.App.DB.Transaction(func(tx *gorm.DB) error {
 
-		stock := "stock" + strconv.Itoa(n)
-		result := tx.Model(&models.Inventory{}).Where("product = ?", orderDto.Items[0].Product).Where(stock+" > 0").UpdateColumn(stock, gorm.Expr(stock+" - ?", 1))
+		result := tx.Model(&models.Inventory{}).Where("product = ?", orderDto.Items[0].Product).Where("stock > 0").UpdateColumn("stock", gorm.Expr("stock - ?", 1))
 		if result.Error != nil {
 			return result.Error
 		}
